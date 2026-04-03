@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { format } from 'date-fns';
 import { calculateBmi, getBmiZone, BMI_ZONE_COLORS, BMI_ZONE_LABELS } from '../lib/bmi';
@@ -26,6 +26,15 @@ export default function EntryForm({ onSubmit }: Props) {
   });
 
   const [toast, setToast] = useState<{ type: 'success' | 'error'; msg: string } | null>(null);
+  const toastTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (toastTimerRef.current !== null) {
+        clearTimeout(toastTimerRef.current);
+      }
+    };
+  }, []);
 
   const height = watch('height');
   const weight = watch('weight');
@@ -52,7 +61,10 @@ export default function EntryForm({ onSubmit }: Props) {
         msg: err instanceof Error ? err.message : 'Failed to save',
       });
     }
-    setTimeout(() => setToast(null), 3500);
+    if (toastTimerRef.current !== null) {
+      clearTimeout(toastTimerRef.current);
+    }
+    toastTimerRef.current = setTimeout(() => setToast(null), 3500);
   };
 
   return (

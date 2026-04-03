@@ -80,8 +80,8 @@ export default function Dashboard() {
                 </tr>
               </thead>
               <tbody>
-                {[...rows].reverse().map((row, i) => (
-                  <tr key={i} className="border-b border-gray-50 last:border-0">
+                {[...rows].reverse().map((row) => (
+                  <tr key={`${row.date}-${row.height}-${row.weight}-${row.bmi}`} className="border-b border-gray-50 last:border-0">
                     <td className="py-2 pr-4 text-gray-700">{row.date}</td>
                     <td className="py-2 pr-4 text-gray-700">{row.height}</td>
                     <td className="py-2 pr-4 text-gray-700">{row.weight}</td>

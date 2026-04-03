@@ -13,7 +13,7 @@ export function useSheetData() {
     setLoading(true);
     setError(null);
     try {
-      const data = await fetchRows(user.accessToken);
+      const data = await fetchRows(user.idToken);
       const sorted = [...data].sort(
         (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
       );
@@ -32,7 +32,7 @@ export function useSheetData() {
   const addRow = useCallback(
     async (row: SheetRow) => {
       if (!user) return;
-      await appendRow(user.accessToken, row);
+      await appendRow(user.idToken, row);
       await load();
     },
     [user, load]

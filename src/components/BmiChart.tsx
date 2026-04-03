@@ -13,6 +13,7 @@ import {
 } from 'recharts';
 import type { SheetRow } from '../lib/api';
 import { getBmiZone, BMI_ZONE_COLORS } from '../lib/bmi';
+import type { BmiZone } from '../lib/bmi';
 
 interface Props {
   rows: SheetRow[];
@@ -23,7 +24,7 @@ interface ChartPoint {
   bmi: number;
   weight: number;
   height: number;
-  zone: string;
+  zone: BmiZone;
   fill: string;
 }
 
@@ -31,7 +32,7 @@ interface ChartPoint {
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 function BmiDot(props: any) {
   const { cx, cy, payload } = props;
-  if (!cx || !cy) return null;
+  if (cx == null || cy == null) return null;
   return (
     <Dot
       cx={cx}

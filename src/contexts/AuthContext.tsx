@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useState, useCallback } from 'react';
 import { jwtDecode } from 'jwt-decode';
+import type { CredentialResponse } from '@react-oauth/google';
 
 interface GoogleJwtPayload {
   email: string;
@@ -12,13 +13,13 @@ interface AuthUser {
   email: string;
   name: string;
   picture: string;
-  /** Raw Google OAuth access token for API calls */
-  accessToken: string;
+  /** Google ID token (JWT) used for server-side verification */
+  idToken: string;
 }
 
 interface AuthContextValue {
   user: AuthUser | null;
-  signIn: (credentialResponse: { credential?: string; access_token?: string }) => void;
+  signIn: (credentialResponse: CredentialResponse) => void;
   signOut: () => void;
 }
 
@@ -30,7 +31,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
 
   const signIn = useCallback(
-    (response: { credential?: string; access_token?: string }) => {
+    (response: CredentialResponse) => {
       const credential = response.credential;
       if (!credential) return;
 
@@ -51,7 +52,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         email: payload.email,
         name: payload.name,
         picture: payload.picture,
-        accessToken: credential,
+        idToken: credential,
       });
     },
     []

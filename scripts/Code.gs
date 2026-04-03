@@ -85,32 +85,45 @@ function doGet(e) {
       .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return ContentService
-      .createTextOutput(JSON.stringify({ error: err.message }))
+      .createTextOutput(JSON.stringify({ success: false, error: err.message }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 }
 
 function doPost(e) {
   try {
-    const authHeader = e.headers && e.headers['Authorization'];
+    const authHeader = e.headers && e.headers['Authorization']
+      ? e.headers['Authorization']
+      : (e.parameter && e.parameter.authorization ? 'Bearer ' + e.parameter.authorization : null);
     verifyToken_(authHeader);
 
     const body = JSON.parse(e.postData.contents);
     const { date, height, weight, bmi } = body;
 
-    if (!date || !height || !weight || !bmi) {
+    if (date === null || date === undefined || date === '' ||
+        height === null || height === undefined ||
+        weight === null || weight === undefined ||
+        bmi === null || bmi === undefined) {
       throw new Error('Missing required fields: date, height, weight, bmi');
     }
 
+    const parsedHeight = Number(height);
+    const parsedWeight = Number(weight);
+    const parsedBmi = Number(bmi);
+
+    if (!Number.isFinite(parsedHeight) || !Number.isFinite(parsedWeight) || !Number.isFinite(parsedBmi)) {
+      throw new Error('Invalid numeric fields: height, weight, bmi');
+    }
+
     const sheet = getSheet_();
-    sheet.appendRow([date, Number(height), Number(weight), Number(bmi)]);
+    sheet.appendRow([date, parsedHeight, parsedWeight, parsedBmi]);
 
     return ContentService
       .createTextOutput(JSON.stringify({ success: true }))
       .setMimeType(ContentService.MimeType.JSON);
   } catch (err) {
     return ContentService
-      .createTextOutput(JSON.stringify({ error: err.message }))
+      .createTextOutput(JSON.stringify({ success: false, error: err.message }))
       .setMimeType(ContentService.MimeType.JSON);
   }
 }
