@@ -29,6 +29,7 @@ export async function fetchRows(token: string): Promise<SheetRow[]> {
   if (
     typeof data === 'object' &&
     data !== null &&
+    !Array.isArray(data) &&
     'error' in data &&
     typeof (data as ApiResponse).error === 'string' &&
     (data as ApiResponse).error!.length > 0
@@ -36,7 +37,19 @@ export async function fetchRows(token: string): Promise<SheetRow[]> {
     throw new Error(`Failed to fetch data: ${(data as ApiResponse).error}`);
   }
 
-  return data as SheetRow[];
+  if (!Array.isArray(data)) {
+    throw new Error('Unexpected response format from server');
+  }
+
+  return (data as unknown[]).filter(
+    (item): item is SheetRow =>
+      typeof item === 'object' &&
+      item !== null &&
+      typeof (item as SheetRow).date === 'string' &&
+      typeof (item as SheetRow).height === 'number' &&
+      typeof (item as SheetRow).weight === 'number' &&
+      typeof (item as SheetRow).bmi === 'number'
+  );
 }
 
 export async function appendRow(token: string, row: SheetRow): Promise<void> {

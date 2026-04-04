@@ -115,17 +115,21 @@ export default function BmiChart({ rows }: Props) {
           <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
 
           {/* BMI zone background bands */}
-          {ZONES.map((z) => (
-            <ReferenceArea
-              key={z.key}
-              yAxisId="bmi"
-              y1={Math.max(z.y1, minBmi)}
-              y2={Math.min(z.y2, maxBmi)}
-              fill={z.color}
-              fillOpacity={0.25}
-              ifOverflow="visible"
-            />
-          ))}
+          {ZONES.map((z) => {
+            const clampedY1 = Math.max(z.y1, minBmi);
+            const clampedY2 = Math.min(z.y2, maxBmi);
+            return clampedY1 < clampedY2 ? (
+              <ReferenceArea
+                key={z.key}
+                yAxisId="bmi"
+                y1={clampedY1}
+                y2={clampedY2}
+                fill={z.color}
+                fillOpacity={0.25}
+                ifOverflow="visible"
+              />
+            ) : null;
+          })}
 
           {/* Zone boundary lines */}
           {[18.5, 25, 30].map((v) =>

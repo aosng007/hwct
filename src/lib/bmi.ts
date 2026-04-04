@@ -1,4 +1,7 @@
 export function calculateBmi(weightKg: number, heightCm: number): number {
+  if (heightCm <= 0) {
+    throw new RangeError('heightCm must be greater than 0');
+  }
   const heightM = heightCm / 100;
   return weightKg / (heightM * heightM);
 }

@@ -16,6 +16,7 @@
 const SPREADSHEET_ID = ''; // TODO: paste your Google Sheet ID here
 const SHEET_NAME = 'ScaleLog';
 const AUTHORIZED_EMAIL = ''; // TODO: paste your Google account email here
+const GOOGLE_CLIENT_ID = ''; // TODO: paste your Google OAuth Client ID here (used to validate token audience)
 // ──────────────────────────────────────────────────────────────────────────────
 
 /**
@@ -41,6 +42,12 @@ function verifyToken_(authHeader) {
   const info = JSON.parse(resp.getContentText());
   if (!info.email) {
     throw new Error('Could not extract email from token');
+  }
+  if (info.email_verified !== 'true' && info.email_verified !== true) {
+    throw new Error('Email is not verified');
+  }
+  if (GOOGLE_CLIENT_ID && info.aud !== GOOGLE_CLIENT_ID) {
+    throw new Error('Token audience mismatch');
   }
   if (info.email !== AUTHORIZED_EMAIL) {
     throw new Error('Unauthorized email: ' + info.email);
@@ -115,8 +122,14 @@ function doPost(e) {
       throw new Error('Invalid numeric fields: height, weight, bmi');
     }
 
+    // Validate date format (YYYY-MM-DD) and sanitize against spreadsheet formula injection.
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) {
+      throw new Error('Invalid date format; expected YYYY-MM-DD');
+    }
+    const safeDate = /^[=+\-@]/.test(date) ? "'" + date : date;
+
     const sheet = getSheet_();
-    sheet.appendRow([date, parsedHeight, parsedWeight, parsedBmi]);
+    sheet.appendRow([safeDate, parsedHeight, parsedWeight, parsedBmi]);
 
     return ContentService
       .createTextOutput(JSON.stringify({ success: true }))
