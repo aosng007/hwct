@@ -25,7 +25,12 @@ interface AuthContextValue {
 
 const AuthContext = createContext<AuthContextValue | null>(null);
 
-const AUTHORIZED_EMAIL = import.meta.env.VITE_AUTHORIZED_EMAIL as string;
+const AUTHORIZED_EMAIL = import.meta.env.VITE_AUTHORIZED_EMAIL as string | undefined;
+if (!AUTHORIZED_EMAIL) {
+  throw new Error(
+    'VITE_AUTHORIZED_EMAIL is not set. Add it to your .env file before starting the app.'
+  );
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<AuthUser | null>(null);
@@ -43,7 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         return;
       }
 
-      if (AUTHORIZED_EMAIL && payload.email !== AUTHORIZED_EMAIL) {
+      if (payload.email !== AUTHORIZED_EMAIL) {
         alert(`Access denied. Only ${AUTHORIZED_EMAIL} may use this app.`);
         return;
       }

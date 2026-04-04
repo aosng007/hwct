@@ -36,9 +36,10 @@ npm install
 
 1. Go to [script.google.com](https://script.google.com) and create a new project.
 2. Paste the contents of `scripts/Code.gs` into the editor.
-3. Set the two constants at the top of the file:
+3. Set the three constants at the top of the file:
    - `SPREADSHEET_ID` — the ID from your Google Sheet URL (`/d/<ID>/edit`)
    - `AUTHORIZED_EMAIL` — your Google account email
+   - `GOOGLE_CLIENT_ID` — your OAuth 2.0 Client ID (same value as `VITE_GOOGLE_CLIENT_ID`)
 4. Deploy → **New deployment** → Type: **Web App**
    - Execute as: **Me**
    - Who has access: **Anyone**

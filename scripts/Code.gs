@@ -5,7 +5,7 @@
  *   - Execute as: Me
  *   - Who has access: Anyone (auth enforced below via token verification)
  *
- * Set the AUTHORIZED_EMAIL and SPREADSHEET_ID constants before deploying.
+ * Set the AUTHORIZED_EMAIL, SPREADSHEET_ID, and GOOGLE_CLIENT_ID constants before deploying.
  *
  * Endpoints:
  *   GET  /exec  → returns all data rows as JSON
@@ -18,6 +18,17 @@ const SHEET_NAME = 'ScaleLog';
 const AUTHORIZED_EMAIL = ''; // TODO: paste your Google account email here
 const GOOGLE_CLIENT_ID = ''; // TODO: paste your Google OAuth Client ID here (used to validate token audience)
 // ──────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Validates that all required configuration constants are set.
+ * Throws a descriptive error if any are missing, so misconfiguration is
+ * immediately obvious rather than producing cryptic downstream failures.
+ */
+function validateConfig_() {
+  if (!SPREADSHEET_ID) throw new Error('SPREADSHEET_ID is not configured. Set it at the top of Code.gs before deploying.');
+  if (!AUTHORIZED_EMAIL) throw new Error('AUTHORIZED_EMAIL is not configured. Set it at the top of Code.gs before deploying.');
+  if (!GOOGLE_CLIENT_ID) throw new Error('GOOGLE_CLIENT_ID is not configured. Set it at the top of Code.gs before deploying.');
+}
 
 /**
  * Verify the Bearer token from the Authorization header and return the email.
@@ -46,7 +57,7 @@ function verifyToken_(authHeader) {
   if (info.email_verified !== 'true' && info.email_verified !== true) {
     throw new Error('Email is not verified');
   }
-  if (GOOGLE_CLIENT_ID && info.aud !== GOOGLE_CLIENT_ID) {
+  if (info.aud !== GOOGLE_CLIENT_ID) {
     throw new Error('Token audience mismatch');
   }
   if (info.email !== AUTHORIZED_EMAIL) {
@@ -68,6 +79,7 @@ function getSheet_() {
 
 function doGet(e) {
   try {
+    validateConfig_();
     const authHeader = e.parameter && e.parameter.authorization
       ? 'Bearer ' + e.parameter.authorization
       : (e.headers && e.headers['Authorization']);
@@ -75,7 +87,6 @@ function doGet(e) {
 
     const sheet = getSheet_();
     const data = sheet.getDataRange().getValues();
-    const headers = data[0]; // ['Date', 'Height (cm)', 'Weight (kg)', 'BMI']
     const rows = data.slice(1).map(function (row) {
       return {
         date: row[0] instanceof Date
@@ -99,6 +110,7 @@ function doGet(e) {
 
 function doPost(e) {
   try {
+    validateConfig_();
     const authHeader = e.headers && e.headers['Authorization']
       ? e.headers['Authorization']
       : (e.parameter && e.parameter.authorization ? 'Bearer ' + e.parameter.authorization : null);
